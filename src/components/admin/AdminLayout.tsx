@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -10,7 +10,10 @@ import {
   Menu, 
   X,
   Bell,
-  Search
+  Search,
+  MessageSquare,
+  Clock,
+  ChevronRight
 } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client';
 
@@ -20,8 +23,10 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const notificationRef = useRef<HTMLDivElement>(null);
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
@@ -32,10 +37,32 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { icon: Settings, label: 'Configurações', path: '/admin/config' },
   ];
 
+  // Mock notifications
+  const [notifications] = useState([
+    { id: 1, title: 'Nova Lead: Padaria Central', time: 'Há 5 min', type: 'lead', unread: true },
+    { id: 2, title: 'Fatura Paga: Restaurante Sabor', time: 'Há 2 horas', type: 'invoice', unread: true },
+    { id: 3, title: 'Novo Projeto: Clínica Sorriso', time: 'Há 1 dia', type: 'portfolio', unread: false },
+  ]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setIsNotificationsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    navigate('/login');
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      navigate('/login');
+    }
   }
 
   return (
@@ -46,7 +73,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           isSidebarOpen ? 'w-64' : 'w-20'
         } bg-[#071428] border-r border-white/5 transition-all duration-300 flex flex-col sticky top-0 h-screen z-30`}
       >
-        {/* Logo Area */}
         <div className="p-6 flex items-center justify-between">
           {isSidebarOpen && (
             <Link to="/" className="flex items-center gap-2.5">
@@ -63,7 +89,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           )}
         </div>
 
-        {/* Navigation */}
         <nav className="grow px-4 space-y-2 mt-4">
           {menuItems.map((item) => (
             <Link
@@ -81,7 +106,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           ))}
         </nav>
 
-        {/* Bottom Actions */}
         <div className="p-4 border-t border-white/5 space-y-2">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -103,7 +127,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content Area */}
       <div className="grow flex flex-col min-w-0">
         {/* Top Header */}
-        <header className="h-20 bg-[#071428]/50 backdrop-blur-md border-bottom border-white/5 flex items-center justify-between px-8 sticky top-0 z-20">
+        <header className="h-20 bg-[#071428]/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-20">
           <div className="flex items-center gap-4 grow max-w-xl">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -116,10 +140,72 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="relative w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-all">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-teal-400 rounded-full border-2 border-[#071428]"></span>
-            </button>
+            {/* Notification Bell */}
+            <div className="relative" ref={notificationRef}>
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                  isNotificationsOpen ? 'bg-teal-400 text-[#030d1a]' : 'bg-white/5 text-gray-400 hover:text-white'
+                }`}
+              >
+                <Bell className="w-5 h-5" />
+                {notifications.some(n => n.unread) && (
+                  <span className={`absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 ${
+                    isNotificationsOpen ? 'bg-white border-teal-400' : 'bg-teal-400 border-[#071428]'
+                  }`}></span>
+                )}
+              </button>
+
+              {/* Dropdown */}
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-4 w-80 bg-[#071428] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-4 border-b border-white/5 flex justify-between items-center bg-white/2">
+                    <span className="text-sm font-bold text-white font-outfit">Notificações</span>
+                    <span className="text-[10px] font-bold text-teal-400 bg-teal-400/10 px-2 py-0.5 rounded-full">3 Novas</span>
+                  </div>
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {notifications.map((notif) => (
+                      <div 
+                        key={notif.id} 
+                        className={`p-4 border-b border-white/5 hover:bg-white/5 transition-all cursor-pointer flex gap-3 ${
+                          notif.unread ? 'bg-teal-400/2' : ''
+                        }`}
+                      >
+                        <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
+                          notif.type === 'lead' ? 'bg-teal-400/10 text-teal-400' : 
+                          notif.type === 'invoice' ? 'bg-blue-400/10 text-blue-400' : 
+                          'bg-purple-400/10 text-purple-400'
+                        }`}>
+                          {notif.type === 'lead' ? <MessageSquare className="w-5 h-5" /> : 
+                           notif.type === 'invoice' ? <FileText className="w-5 h-5" /> : 
+                           <ImageIcon className="w-5 h-5" />}
+                        </div>
+                        <div className="grow min-w-0">
+                          <p className={`text-sm mb-1 truncate ${notif.unread ? 'text-white font-bold' : 'text-gray-400'}`}>
+                            {notif.title}
+                          </p>
+                          <p className="text-[10px] text-gray-500 flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {notif.time}
+                          </p>
+                        </div>
+                        {notif.unread && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-teal-400 mt-2 shrink-0"></div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <Link 
+                    to="/admin/leads" 
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="p-4 block text-center text-xs font-bold text-teal-400 hover:bg-white/5 transition-all"
+                  >
+                    Ver todas as leads
+                  </Link>
+                </div>
+              )}
+            </div>
+
             <div className="h-8 w-px bg-white/10 mx-2"></div>
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">

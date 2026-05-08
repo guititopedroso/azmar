@@ -118,13 +118,13 @@ export default function QuoteForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-10" noValidate>
       {/* Dados pessoais */}
-      <div className="card">
-        <h2 className="text-white text-lg font-semibold mb-5">
-          Os teus dados
+      <div className="card-glass">
+        <h2 className="text-white text-xl font-bold mb-8 font-outfit">
+          1. Os teus dados
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
           <div className="form-group">
             <label className="label" htmlFor="name">Nome *</label>
             <input id="name" className="input" placeholder="O teu nome" {...register('name')} />
@@ -162,11 +162,11 @@ export default function QuoteForm() {
       </div>
 
       {/* Presença digital atual */}
-      <div className="card">
-        <h2 className="text-white text-lg font-semibold mb-5">
-          Presença digital atual
+      <div className="card-glass">
+        <h2 className="text-white text-xl font-bold mb-8 font-outfit">
+          2. Presença digital atual
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
           <div className="form-group">
             <label className="label" htmlFor="current_website">Website atual (se existir)</label>
             <input id="current_website" className="input" placeholder="https://…" {...register('current_website')} />
@@ -179,11 +179,11 @@ export default function QuoteForm() {
       </div>
 
       {/* Serviço e pacote */}
-      <div className="card">
-        <h2 className="text-white text-lg font-semibold mb-5">
-          O que precisas
+      <div className="card-glass">
+        <h2 className="text-white text-xl font-bold mb-8 font-outfit">
+          3. O que precisas
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
           <div className="form-group">
             <label className="label" htmlFor="service">Serviço pretendido</label>
             <select id="service" className="select" {...register('service')}>
@@ -215,8 +215,8 @@ export default function QuoteForm() {
       </div>
 
       {/* Mensagem */}
-      <div className="card">
-        <h2 className="text-white text-lg font-semibold mb-5">Mensagem</h2>
+      <div className="card-glass">
+        <h2 className="text-white text-xl font-bold mb-8 font-outfit">4. Mensagem</h2>
         <div className="form-group">
           <label className="label" htmlFor="message">
             Conta-nos mais sobre o teu projeto (opcional)

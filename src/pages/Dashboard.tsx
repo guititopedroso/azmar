@@ -111,9 +111,8 @@ function SidebarLink({ icon, label, active = false }: { icon: any, label: string
   return (
     <a
       href="#"
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-        active ? 'bg-teal-400/10 text-teal-400' : 'text-gray-400 hover:text-white hover:bg-white/5'
-      }`}
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active ? 'bg-teal-400/10 text-teal-400' : 'text-gray-400 hover:text-white hover:bg-white/5'
+        }`}
     >
       {icon}
       <span className="font-medium">{label}</span>
@@ -126,9 +125,8 @@ function StatusCard({ title, value, color }: { title: string, value: string, col
     <div className="p-6 rounded-2xl bg-[#0a1c38] border border-white/5">
       <p className="text-sm text-gray-400 mb-2 uppercase tracking-wider font-semibold">{title}</p>
       <p className="text-2xl font-bold text-white font-outfit">{value}</p>
-      <div className={`h-1 w-12 rounded-full mt-4 ${
-        color === 'teal' ? 'bg-teal-400' : color === 'blue' ? 'bg-blue-400' : 'bg-green-400'
-      }`}></div>
+      <div className={`h-1 w-12 rounded-full mt-4 ${color === 'teal' ? 'bg-teal-400' : color === 'blue' ? 'bg-blue-400' : 'bg-green-400'
+        }`}></div>
     </div>
   );
 }

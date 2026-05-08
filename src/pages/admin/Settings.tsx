@@ -24,24 +24,32 @@ export default function AdminSettings() {
   }, []);
 
   async function fetchSettings() {
-    const supabase = createClient();
-    const { data, error } = await supabase.from('site_settings').select('*');
-    
-    if (!error && data) {
-      const settingsMap = data.reduce((acc: any, curr: any) => {
-        acc[curr.key] = curr.value;
-        return acc;
-      }, {});
-      setSettings(settingsMap);
-    } else {
-      // Fallback
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      if (!import.meta.env.VITE_SUPABASE_URL) throw new Error('No Supabase');
+
+      const { data, error } = await supabase.from('site_settings').select('*');
+      
+      if (!error && data) {
+        const settingsMap = data.reduce((acc: any, curr: any) => {
+          acc[curr.key] = curr.value;
+          return acc;
+        }, {});
+        setSettings(settingsMap);
+      } else {
+        throw new Error('Error fetching');
+      }
+    } catch (err) {
+      console.warn('Mock Data for Settings');
       setSettings({
         contact_email: 'geral@azmar.pt',
         contact_phone: '+351 912 345 678',
         whatsapp_number: '351912345678',
         location_text: 'Setúbal, Portugal',
         instagram_url: 'https://instagram.com/azmar.pt',
-        linkedin_url: 'https://linkedin.com/company/azmar-pt'
+        linkedin_url: 'https://linkedin.com/company/azmar-pt',
+        tiktok_url: ''
       });
     }
     setIsLoading(false);
@@ -52,18 +60,17 @@ export default function AdminSettings() {
     setIsSaving(true);
     setSaveSuccess(false);
 
-    const supabase = createClient();
-    
-    const updates = Object.entries(settings).map(([key, value]) => ({
-      key,
-      value
-    }));
-
-    const { error } = await supabase.from('site_settings').upsert(updates);
-
-    if (!error) {
+    try {
+      const supabase = createClient();
+      const updates = Object.entries(settings).map(([key, value]) => ({
+        key,
+        value
+      }));
+      await supabase.from('site_settings').upsert(updates);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('Error saving:', err);
     }
     
     setIsSaving(false);
@@ -72,8 +79,9 @@ export default function AdminSettings() {
   if (isLoading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 text-teal-400 animate-spin" />
+        <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500 space-y-4">
+          <Loader2 className="w-10 h-10 animate-spin text-teal-400" />
+          <p className="font-bold uppercase tracking-widest text-xs">A carregar configurações...</p>
         </div>
       </AdminLayout>
     );
@@ -81,7 +89,7 @@ export default function AdminSettings() {
 
   return (
     <AdminLayout>
-      <div className="space-y-8 max-w-4xl">
+      <div className="space-y-8 max-w-4xl animate-in fade-in duration-500">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-white font-outfit mb-2">Configurações do Site</h1>
@@ -97,7 +105,7 @@ export default function AdminSettings() {
 
         <form onSubmit={handleSave} className="grid grid-cols-1 gap-8">
           {/* Contact Information */}
-          <div className="card bg-[#0a1c38]/50 p-6">
+          <div className="card-glass p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-teal-400/10 text-teal-400">
                 <Mail className="w-5 h-5" />
@@ -146,7 +154,7 @@ export default function AdminSettings() {
           </div>
 
           {/* Social Media */}
-          <div className="card bg-[#0a1c38]/50 p-6">
+          <div className="card-glass p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 rounded-lg bg-blue-400/10 text-blue-400">
                 <Globe className="w-5 h-5" />

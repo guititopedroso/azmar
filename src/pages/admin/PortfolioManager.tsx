@@ -10,7 +10,8 @@ import {
   EyeOff,
   X,
   Save,
-  Upload
+  Upload,
+  Loader2
 } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client';
 
@@ -36,19 +37,27 @@ export default function AdminPortfolio() {
   }, []);
 
   async function fetchProjects() {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from('portfolio_projects')
-      .select('*')
-      .order('order', { ascending: true });
-    
-    if (!error && data) {
-      setProjects(data);
-    } else {
-      // Mock data if no DB connection
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      if (!import.meta.env.VITE_SUPABASE_URL) throw new Error('No Supabase');
+
+      const { data, error } = await supabase
+        .from('portfolio_projects')
+        .select('*')
+        .order('order', { ascending: true });
+      
+      if (!error && data) {
+        setProjects(data);
+      } else {
+        throw new Error('Error fetching');
+      }
+    } catch (err) {
+      console.warn('Mock Data for Portfolio');
       setProjects([
         { id: 1, name: 'Restaurante Sabor', category: 'website', status: 'public', cover_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80' },
         { id: 2, name: 'Clínica Sorriso', category: 'branding', status: 'public', cover_url: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80' },
+        { id: 3, name: 'Eco Store', category: 'marketing', status: 'public', cover_url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80' },
       ]);
     }
     setIsLoading(false);
@@ -70,13 +79,15 @@ export default function AdminPortfolio() {
     e.preventDefault();
     if (!editingProject) return;
 
-    const supabase = createClient();
-    if (editingProject.id) {
-      // Update
-      await supabase.from('portfolio_projects').update(editingProject).eq('id', editingProject.id);
-    } else {
-      // Create
-      await supabase.from('portfolio_projects').insert([{ ...editingProject, slug: editingProject.name?.toLowerCase().replace(/ /g, '-') }]);
+    try {
+      const supabase = createClient();
+      if (editingProject.id && typeof editingProject.id === 'string') {
+        await supabase.from('portfolio_projects').update(editingProject).eq('id', editingProject.id);
+      } else if (!editingProject.id) {
+        await supabase.from('portfolio_projects').insert([{ ...editingProject, slug: editingProject.name?.toLowerCase().replace(/ /g, '-') }]);
+      }
+    } catch (err) {
+      console.error('Error saving:', err);
     }
     
     setIsModalOpen(false);
@@ -85,8 +96,12 @@ export default function AdminPortfolio() {
 
   const handleDelete = async (id: string | number) => {
     if (confirm('Tens a certeza que queres eliminar este projeto?')) {
-      const supabase = createClient();
-      await supabase.from('portfolio_projects').delete().eq('id', id);
+      try {
+        const supabase = createClient();
+        await supabase.from('portfolio_projects').delete().eq('id', id);
+      } catch (err) {
+        console.error('Error deleting:', err);
+      }
       fetchProjects();
     }
   };
@@ -97,7 +112,7 @@ export default function AdminPortfolio() {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-8 animate-in fade-in duration-500">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-white font-outfit mb-2">Gestão de Portfólio</h1>
@@ -130,50 +145,59 @@ export default function AdminPortfolio() {
 
         {/* Portfolio Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProjects.map((project) => (
-            <div key={project.id} className="group relative bg-[#0a1c38]/50 rounded-2xl overflow-hidden border border-white/5 hover:border-teal-400/30 transition-all">
-              <div className="aspect-video relative overflow-hidden">
-                <img 
-                  src={project.cover_url} 
-                  alt={project.name} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-[#030d1a] to-transparent opacity-60"></div>
-                <div className="absolute top-4 right-4">
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                    project.status === 'public' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-gray-500/20 text-gray-400 border border-gray-500/20'
-                  }`}>
-                    {project.status === 'public' ? 'Público' : 'Oculto'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-5">
-                <p className="text-teal-400 text-[10px] font-bold uppercase tracking-widest mb-1">{project.category}</p>
-                <h3 className="text-lg font-bold text-white mb-4 font-outfit">{project.name}</h3>
-                <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                  <div className="flex gap-1">
-                    <button onClick={() => openModal(project)} className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-teal-400 transition-all">
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button onClick={() => handleDelete(project.id)} className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-red-400 transition-all">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                  {project.website_url && (
-                    <a href={project.website_url} target="_blank" rel="noreferrer" className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-all">
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  )}
-                </div>
-              </div>
+          {isLoading ? (
+            <div className="col-span-full py-20 flex flex-col items-center justify-center text-gray-500 gap-4">
+              <Loader2 className="w-10 h-10 animate-spin text-teal-400" />
+              <p className="font-bold uppercase tracking-widest text-[10px]">A carregar portfólio...</p>
             </div>
-          ))}
+          ) : (
+            <>
+              {filteredProjects.map((project) => (
+                <div key={project.id} className="group relative bg-[#0a1c38]/50 rounded-2xl overflow-hidden border border-white/5 hover:border-teal-400/30 transition-all">
+                  <div className="aspect-video relative overflow-hidden">
+                    <img 
+                      src={project.cover_url} 
+                      alt={project.name} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-[#030d1a] to-transparent opacity-60"></div>
+                    <div className="absolute top-4 right-4">
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        project.status === 'public' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-gray-500/20 text-gray-400 border border-gray-500/20'
+                      }`}>
+                        {project.status === 'public' ? 'Público' : 'Oculto'}
+                      </span>
+                    </div>
+                  </div>
 
-          <button onClick={() => openModal()} className="aspect-video flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-white/5 hover:border-teal-400/20 hover:bg-teal-400/5 transition-all text-gray-500 hover:text-teal-400 group">
-            <Plus className="w-6 h-6" />
-            <span className="font-semibold">Adicionar Projeto</span>
-          </button>
+                  <div className="p-5">
+                    <p className="text-teal-400 text-[10px] font-bold uppercase tracking-widest mb-1">{project.category}</p>
+                    <h3 className="text-lg font-bold text-white mb-4 font-outfit">{project.name}</h3>
+                    <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                      <div className="flex gap-1">
+                        <button onClick={() => openModal(project)} className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-teal-400 transition-all">
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleDelete(project.id)} className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-red-400 transition-all">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {project.website_url && (
+                        <a href={project.website_url} target="_blank" rel="noreferrer" className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-all">
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <button onClick={() => openModal()} className="aspect-video flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-white/5 hover:border-teal-400/20 hover:bg-teal-400/5 transition-all text-gray-500 hover:text-teal-400 group">
+                <Plus className="w-6 h-6" />
+                <span className="font-semibold">Adicionar Projeto</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -190,7 +214,7 @@ export default function AdminPortfolio() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleSave} className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="form-group">
                   <label className="label">Nome do Projeto</label>
@@ -205,7 +229,7 @@ export default function AdminPortfolio() {
                 <div className="form-group">
                   <label className="label">Categoria</label>
                   <select 
-                    className="input"
+                    className="select"
                     value={editingProject.category}
                     onChange={e => setEditingProject({...editingProject, category: e.target.value as any})}
                   >
@@ -220,7 +244,7 @@ export default function AdminPortfolio() {
               <div className="form-group">
                 <label className="label">Descrição Curta</label>
                 <textarea 
-                  className="input min-h-[100px]" 
+                  className="textarea" 
                   value={editingProject.short_description}
                   onChange={e => setEditingProject({...editingProject, short_description: e.target.value})}
                 ></textarea>
@@ -229,16 +253,14 @@ export default function AdminPortfolio() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="form-group">
                   <label className="label">URL da Imagem de Capa</label>
-                  <div className="flex gap-2">
-                    <input 
-                      required 
-                      type="text" 
-                      className="input" 
-                      placeholder="https://..."
-                      value={editingProject.cover_url}
-                      onChange={e => setEditingProject({...editingProject, cover_url: e.target.value})}
-                    />
-                  </div>
+                  <input 
+                    required 
+                    type="text" 
+                    className="input" 
+                    placeholder="https://..."
+                    value={editingProject.cover_url}
+                    onChange={e => setEditingProject({...editingProject, cover_url: e.target.value})}
+                  />
                 </div>
                 <div className="form-group">
                   <label className="label">URL do Website (opcional)</label>
