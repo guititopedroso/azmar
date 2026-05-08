@@ -214,6 +214,19 @@
   .bg-subtle {
     @apply bg-(--ocean-900);
   }
+
+  /* Forms */
+  .form-group {
+    @apply flex flex-col gap-2 mb-6;
+  }
+
+  .label {
+    @apply text-[0.875rem] font-medium text-white/90 mb-0.5 ml-1 tracking-wide;
+  }
+
+  .input {
+    @apply w-full bg-[#0a1c38] border border-[rgba(255,255,255,0.08)] rounded-xl px-5 py-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-(--teal-400) focus:ring-1 focus:ring-(--teal-400) transition-all;
+  }
 }
 
 @layer utilities {

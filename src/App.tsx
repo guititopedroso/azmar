@@ -14,6 +14,14 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Cookies from './pages/Cookies';
 import Complaints from './pages/Complaints';
+import Dashboard from './pages/Dashboard';
+import WhatsAppContact from './components/WhatsAppContact';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminClients from './pages/admin/Clients';
+import AdminLeads from './pages/admin/Leads';
+import AdminInvoices from './pages/admin/Invoices';
+import AdminPortfolio from './pages/admin/PortfolioManager';
+import AdminSettings from './pages/admin/Settings';
 
 // Simulação de scroll to top em navegação
 import { useEffect } from 'react';
@@ -35,6 +43,13 @@ const App = () => {
         <Routes>
           {/* Rota de Login sem Header/Footer */}
           <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/clientes" element={<AdminClients />} />
+          <Route path="/admin/leads" element={<AdminLeads />} />
+          <Route path="/admin/faturas" element={<AdminInvoices />} />
+          <Route path="/admin/portfolio" element={<AdminPortfolio />} />
+          <Route path="/admin/config" element={<AdminSettings />} />
 
           {/* Rotas Públicas com Header/Footer */}
           <Route
@@ -64,6 +79,7 @@ const App = () => {
             }
           />
         </Routes>
+        <WhatsAppContact />
       </div>
     </BrowserRouter>
   );

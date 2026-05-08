@@ -26,17 +26,38 @@ export default function Login() {
     setServerError('');
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       });
-      if (error) {
-        setServerError('Email ou password incorretos. Por favor verifica e tenta novamente.');
+
+      if (authError) {
+        setServerError(authError.message);
         return;
       }
-      navigate('/dashboard');
-    } catch {
-      setServerError('Erro técnico ao tentar entrar.');
+
+      if (authData.user) {
+        // Buscar o role do perfil
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (profileError) {
+          console.error('Erro ao buscar perfil:', profileError);
+          navigate('/dashboard'); // Fallback
+          return;
+        }
+
+        if (profile.role === 'admin' || profile.role === 'team') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    } catch (err: any) {
+      setServerError('Erro técnico: ' + (err.message || 'Desconhecido'));
     }
   }
 
@@ -83,7 +104,7 @@ export default function Login() {
                 {...register('email')}
               />
               {errors.email && (
-                <span className="text-red-400 text-xs">{errors.email.message}</span>
+                <span className="text-red-400 text-xs mt-1 block">{errors.email.message}</span>
               )}
             </div>
 
@@ -108,7 +129,7 @@ export default function Login() {
                 </button>
               </div>
               {errors.password && (
-                <span className="text-red-400 text-xs">{errors.password.message}</span>
+                <span className="text-red-400 text-xs mt-1 block">{errors.password.message}</span>
               )}
             </div>
 
