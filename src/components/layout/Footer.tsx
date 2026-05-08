@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from 'react-router-dom';
 import { Waves, Mail, Phone } from 'lucide-react';
 
 const services = [
@@ -43,7 +43,7 @@ export default function Footer() {
                 Fala connosco e recebe uma proposta sem compromisso.
               </p>
             </div>
-            <Link href="/orcamento" className="btn btn-primary btn-lg shrink-0">
+            <Link to="/orcamento" className="btn btn-primary btn-lg shrink-0">
               Pedir Orçamento
             </Link>
           </div>
@@ -55,8 +55,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 mb-4 w-fit">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-[#2563b0] flex items-center justify-center">
+            <Link to="/" className="flex items-center gap-2.5 mb-4 w-fit">
+              <div className="w-9 h-9 rounded-xl bg-linear-to-br from-teal-400 to-[#2563b0] flex items-center justify-center">
                 <Waves className="w-5 h-5 text-[#030d1a]" />
               </div>
               <span className="font-outfit font-bold text-xl tracking-wider text-white">
@@ -118,7 +118,7 @@ export default function Footer() {
               {services.map((s) => (
                 <li key={s.href}>
                   <Link
-                    href={s.href}
+                    to={s.href}
                     className="text-[#94a3b8] text-sm hover:text-white transition-colors"
                   >
                     {s.label}
@@ -137,7 +137,7 @@ export default function Footer() {
               {quickLinks.map((l) => (
                 <li key={l.href}>
                   <Link
-                    href={l.href}
+                    to={l.href}
                     className="text-[#94a3b8] text-sm hover:text-white transition-colors"
                   >
                     {l.label}
@@ -191,7 +191,7 @@ export default function Footer() {
             {legalLinks.map((l) => (
               <Link
                 key={l.href}
-                href={l.href}
+                to={l.href}
                 className="text-[#94a3b8] text-xs hover:text-white transition-colors"
               >
                 {l.label}

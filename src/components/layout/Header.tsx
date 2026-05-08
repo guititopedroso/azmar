@@ -1,10 +1,7 @@
-'use client';
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Link, useLocation } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Menu, X, Waves } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 
 const navLinks = [
   { href: '/servicos', label: 'Serviços' },
@@ -16,7 +13,7 @@ const navLinks = [
 ];
 
 export default function Header() {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -41,8 +38,8 @@ export default function Header() {
       <div className="container">
         <div className="flex items-center justify-between h-18 py-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-400 to-[#2563b0] flex items-center justify-center shadow-lg group-hover:shadow-teal-400/30 transition-all duration-300">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-linear-to-br from-teal-400 to-[#2563b0] flex items-center justify-center shadow-lg group-hover:shadow-teal-400/30 transition-all duration-300">
               <Waves className="w-5 h-5 text-[#030d1a]" />
             </div>
             <span className="font-outfit font-bold text-xl tracking-wider text-white">
@@ -55,7 +52,7 @@ export default function Header() {
             {navLinks.map((link) => (
               <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                   pathname === link.href
@@ -71,7 +68,7 @@ export default function Header() {
           {/* CTA + Login Desktop */}
           <div className="hidden lg:flex items-center gap-3">
             <Link
-              href="/login"
+              to="/login"
               className={cn(
                 'px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                 'text-[#94a3b8] hover:text-white hover:bg-white/5'
@@ -79,7 +76,7 @@ export default function Header() {
             >
               Área Cliente
             </Link>
-            <Link href="/orcamento" className="btn btn-primary btn-sm">
+            <Link to="/orcamento" className="btn btn-primary btn-sm">
               Pedir Orçamento
             </Link>
           </div>
@@ -102,7 +99,7 @@ export default function Header() {
             {navLinks.map((link) => (
               <Link
                 key={link.href}
-                href={link.href}
+                to={link.href}
                 className={cn(
                   'px-4 py-3 rounded-lg text-sm font-medium transition-all',
                   pathname === link.href
@@ -114,10 +111,10 @@ export default function Header() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-[rgba(30,80,160,0.2)]">
-              <Link href="/login" className="btn btn-secondary btn-sm text-center">
+              <Link to="/login" className="btn btn-secondary btn-sm text-center">
                 Área Cliente
               </Link>
-              <Link href="/orcamento" className="btn btn-primary btn-sm text-center">
+              <Link to="/orcamento" className="btn btn-primary btn-sm text-center">
                 Pedir Orçamento
               </Link>
             </div>
