@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
@@ -23,7 +22,19 @@ import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-const navGroups = [
+interface NavItem {
+  href: string;
+  icon: any;
+  label: string;
+  exact?: boolean;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
     label: 'Geral',
     items: [
@@ -63,15 +74,15 @@ interface Props {
 }
 
 export default function AdminSidebar({ user, role }: Props) {
-  const pathname = usePathname();
-  const router = useRouter();
+  const location = useLocation();
+  const pathname = location.pathname;
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push('/');
-    router.refresh();
+    navigate('/');
   }
 
   function isActive(href: string, exact = false) {
@@ -100,8 +111,8 @@ export default function AdminSidebar({ user, role }: Props) {
       >
         {/* Logo */}
         <div className="p-6 border-b border-[rgba(30,80,160,0.2)]">
-          <Link href="/admin" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-[#2563b0] flex items-center justify-center">
+          <Link to="/admin" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-teal-400 to-[#2563b0] flex items-center justify-center">
               <Waves className="w-4 h-4 text-[#030d1a]" />
             </div>
             <div>
@@ -126,7 +137,7 @@ export default function AdminSidebar({ user, role }: Props) {
                   return (
                     <li key={item.href}>
                       <Link
-                        href={item.href}
+                        to={item.href}
                         onClick={() => setMobileOpen(false)}
                         className={cn(
                           'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',

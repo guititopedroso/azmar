@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -35,15 +34,15 @@ interface Props {
 }
 
 export default function ClientSidebar({ user, profile }: Props) {
-  const pathname = usePathname();
-  const router = useRouter();
+  const location = useLocation();
+  const pathname = location.pathname;
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push('/');
-    router.refresh();
+    navigate('/');
   }
 
   const displayName = profile?.full_name ?? user.email ?? 'Cliente';
@@ -76,8 +75,8 @@ export default function ClientSidebar({ user, profile }: Props) {
       >
         {/* Logo */}
         <div className="p-6 border-b border-[rgba(30,80,160,0.2)]">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-[#2563b0] flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-linear-to-br from-teal-400 to-[#2563b0] flex items-center justify-center">
               <Waves className="w-4 h-4 text-[#030d1a]" />
             </div>
             <span className="font-outfit font-bold text-lg tracking-wider text-white">
@@ -89,7 +88,7 @@ export default function ClientSidebar({ user, profile }: Props) {
         {/* User info */}
         <div className="p-6 border-b border-[rgba(30,80,160,0.2)]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#2563b0] to-[#2dd4bf] flex items-center justify-center text-white font-bold text-sm shrink-0">
+            <div className="w-10 h-10 rounded-full bg-linear-to-br from-[#2563b0] to-[#2dd4bf] flex items-center justify-center text-white font-bold text-sm shrink-0">
               {initials}
             </div>
             <div className="min-w-0">
@@ -113,7 +112,7 @@ export default function ClientSidebar({ user, profile }: Props) {
               return (
                 <li key={item.href}>
                   <Link
-                    href={item.href}
+                    to={item.href}
                     onClick={() => setMobileOpen(false)}
                     className={cn(
                       'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
