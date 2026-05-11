@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDown, MessageCircle } from 'lucide-react';
 
 const faqs = [
   {
@@ -72,7 +75,10 @@ export default function FAQ() {
           </h1>
           <p className="text-[#94a3b8] text-lg max-w-xl mx-auto">
             Aqui encontras respostas às perguntas mais comuns. Se não encontrares
-            o que procuras, fala connosco.
+            o que procuras,{' '}
+            <Link to="/contactos" className="text-[#2dd4bf] hover:underline font-medium">
+              fala connosco
+            </Link>.
           </p>
         </div>
       </section>
@@ -82,33 +88,60 @@ export default function FAQ() {
         <div className="container-sm">
           <div className="space-y-4">
             {faqs.map((faq, i) => (
-              <details
-                key={i}
-                className="group card cursor-pointer select-none list-none"
-              >
-                <summary className="flex items-start justify-between gap-4 font-semibold text-white text-base cursor-pointer list-none">
-                  <span>{faq.q}</span>
-                  <span className="text-[#2dd4bf] text-xl shrink-0 mt-0.5 group-open:rotate-45 transition-transform duration-200">
-                    +
-                  </span>
-                </summary>
-                <p className="mt-4 text-[#94a3b8] text-sm leading-relaxed border-t border-[rgba(30,80,160,0.2)] pt-4">
-                  {faq.a}
-                </p>
-              </details>
+              <AccordionItem key={i} question={faq.q} answer={faq.a} />
             ))}
           </div>
 
-          <div className="text-center mt-14">
-            <p className="text-[#94a3b8] mb-6">
-              Não encontraste resposta à tua dúvida?
+          <div className="text-center mt-20 p-10 rounded-3xl bg-[rgba(37,99,176,0.05)] border border-[rgba(30,80,160,0.15)]">
+            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-[#2dd4bf]/20 to-[#2563b0]/20 flex items-center justify-center mx-auto mb-6">
+              <MessageCircle className="w-8 h-8 text-[#2dd4bf]" />
+            </div>
+            <h3 className="text-white text-xl mb-3">Ainda tens dúvidas?</h3>
+            <p className="text-[#94a3b8] mb-8 max-w-sm mx-auto">
+              Não encontraste a resposta que procuravas? A nossa equipa está pronta para ajudar.
             </p>
-            <Link to="/contactos" className="btn btn-primary">
-              Fala connosco
+            <Link to="/contactos" className="btn btn-primary btn-lg">
+              Falar com a equipa
             </Link>
           </div>
         </div>
       </section>
     </>
+  );
+}
+
+function AccordionItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div 
+      className={`card cursor-pointer transition-all duration-300 ${isOpen ? 'border-[rgba(45,212,191,0.3)] shadow-[0_0_30px_rgba(45,212,191,0.05)]' : ''}`}
+      onClick={() => setIsOpen(!isOpen)}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <span className={`font-semibold text-base transition-colors duration-300 ${isOpen ? 'text-white' : 'text-[#e2e8f0]'}`}>
+          {question}
+        </span>
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${isOpen ? 'bg-[#2dd4bf] text-[#030d1a] rotate-180' : 'bg-white/5 text-[#2dd4bf]'}`}>
+          <ChevronDown className="w-5 h-5" />
+        </div>
+      </div>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="pt-5 mt-5 border-t border-[rgba(30,80,160,0.2)] text-[#94a3b8] text-sm leading-relaxed">
+              {answer}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

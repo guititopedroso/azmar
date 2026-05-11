@@ -14,6 +14,7 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Cookies from './pages/Cookies';
 import Complaints from './pages/Complaints';
+import Compliments from './pages/Compliments';
 import Dashboard from './pages/Dashboard';
 import WhatsAppContact from './components/WhatsAppContact';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -71,6 +72,7 @@ const App = () => {
                     <Route path="/termos" element={<Terms />} />
                     <Route path="/cookies" element={<Cookies />} />
                     <Route path="/reclamacoes" element={<Complaints />} />
+                    <Route path="/elogios" element={<Compliments />} />
                     <Route path="*" element={<Home />} />
                   </Routes>
                 </main>

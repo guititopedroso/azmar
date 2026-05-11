@@ -15,6 +15,7 @@ const legalLinks = [
   { href: '/privacidade', label: 'Política de Privacidade' },
   { href: '/cookies', label: 'Política de Cookies' },
   { href: '/reclamacoes', label: 'Livro de Reclamações' },
+  { href: '/elogios', label: 'Livro de Elogios' },
 ];
 
 const quickLinks = [

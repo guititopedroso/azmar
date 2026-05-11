@@ -226,12 +226,12 @@ export default function Packages() {
             <table className="table-azmar">
               <thead>
                 <tr className="bg-[rgba(7,20,40,0.8)]">
-                  <th className="text-left w-1/2">Funcionalidade</th>
-                  <th className="text-center">Start</th>
-                  <th className="text-center bg-[rgba(45,212,191,0.04)]">
+                  <th className="text-left w-[40%]">Funcionalidade</th>
+                  <th className="text-center w-[20%]">Start</th>
+                  <th className="text-center w-[20%] bg-[rgba(45,212,191,0.04)]">
                     Business
                   </th>
-                  <th className="text-center">Growth</th>
+                  <th className="text-center w-[20%]">Growth</th>
                 </tr>
               </thead>
               <tbody>
