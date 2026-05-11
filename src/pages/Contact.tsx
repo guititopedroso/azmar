@@ -12,8 +12,8 @@ const contactInfo = [
   {
     icon: Phone,
     label: 'Telefone / WhatsApp',
-    value: '+351 912 345 678',
-    href: 'tel:+351912345678',
+    value: '+351 932 237 817',
+    href: 'tel:+351932237817',
   },
   {
     icon: MapPin,

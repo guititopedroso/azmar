@@ -13,9 +13,11 @@ import {
   Search,
   MessageSquare,
   Clock,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from 'lucide-react';
-import { createClient } from '../../lib/supabase/client';
+import { auth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -56,8 +58,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   async function handleLogout() {
     try {
-      const supabase = createClient();
-      await supabase.auth.signOut();
+      await signOut(auth);
     } catch (err) {
       console.error('Logout error:', err);
     } finally {
@@ -128,7 +129,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="grow flex flex-col min-w-0">
         {/* Top Header */}
         <header className="h-20 bg-[#071428]/50 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-8 sticky top-0 z-20">
-          <div className="flex items-center gap-4 grow max-w-xl">
+          <div className="flex items-center gap-6 grow max-w-xl">
+            <button 
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-all text-sm font-medium group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-all">
+                <ArrowLeft className="w-4 h-4" />
+              </div>
+              <span className="hidden md:block">Voltar ao Site</span>
+            </button>
+            <div className="h-6 w-px bg-white/10 hidden md:block"></div>
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
               <input 

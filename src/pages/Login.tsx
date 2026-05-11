@@ -4,7 +4,9 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Waves, Loader2, Eye, EyeOff, ShieldCheck, ChevronRight } from 'lucide-react';
-import { createClient } from '../lib/supabase/client';
+import { auth, db } from '../lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 const schema = z.object({
   email: z.string().email('Email inválido'),
@@ -25,30 +27,21 @@ export default function Login() {
   async function onSubmit(data: FormData) {
     setServerError('');
     try {
-      const supabase = createClient();
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
+      const userCredential = await signInWithEmailAndPassword(auth, data.email, data.password);
+      const user = userCredential.user;
 
-      if (authError) {
-        setServerError(authError.message);
-        return;
-      }
+      if (user) {
+        // Buscar o role do perfil no Firestore
+        const docRef = doc(db, 'profiles', user.uid);
+        const docSnap = await getDoc(docRef);
 
-      if (authData.user) {
-        // Buscar o role do perfil
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', authData.user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Erro ao buscar perfil:', profileError);
+        if (!docSnap.exists()) {
+          console.error('Perfil não encontrado no Firestore');
           navigate('/dashboard'); // Fallback
           return;
         }
+
+        const profile = docSnap.data();
 
         if (profile.role === 'admin' || profile.role === 'team') {
           navigate('/admin');
@@ -57,7 +50,11 @@ export default function Login() {
         }
       }
     } catch (err: any) {
-      setServerError('Erro técnico: ' + (err.message || 'Desconhecido'));
+      let message = 'Erro técnico: ' + (err.message || 'Desconhecido');
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        message = 'Email ou password incorretos.';
+      }
+      setServerError(message);
     }
   }
 

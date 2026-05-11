@@ -18,7 +18,8 @@ import {
   Trash2,
   Save
 } from 'lucide-react';
-import { createClient } from '../../lib/supabase/client';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, doc, addDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 
 export default function AdminClients() {
   const [clients, setClients] = useState<any[]>([]);
@@ -44,19 +45,19 @@ export default function AdminClients() {
   async function fetchClients() {
     setIsLoading(true);
     try {
-      const supabase = createClient();
-      if (!import.meta.env.VITE_SUPABASE_URL) throw new Error('No Supabase');
-
-      const { data, error } = await supabase
-        .from('clients')
-        .select('*, subscriptions(*, packages(*))')
-        .order('created_at', { ascending: false });
+      const q = query(collection(db, 'clients'), orderBy('created_at', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
       
-      if (!error && data) {
-        setClients(data);
-      }
+      // Para simular o join das subscrições (opcional, pode ser feito separadamente se necessário)
+      // Por agora, garantimos que não rebenta se faltar
+      setClients(data.map(c => ({ ...c, subscriptions: c.subscriptions || [] })));
     } catch (err) {
-      console.warn('Mock Data for Clients');
+      console.warn('Erro ao carregar clientes do Firestore:', err);
+      // Fallback para Mock Data
       setClients([
         { id: '1', business_name: 'Restaurante Sabor', name: 'João Silva', email: 'joao@sabor.pt', phone: '912345678', nif: '123456789', created_at: new Date().toISOString(), subscriptions: [{ status: 'active', monthly_price: 350, packages: { name: 'Pack Business' } }] },
         { id: '2', business_name: 'Eco Store', name: 'Maria Santos', email: 'maria@ecostore.pt', phone: '923456789', nif: '987654321', created_at: new Date().toISOString(), subscriptions: [{ status: 'active', monthly_price: 120, packages: { name: 'Pack Start' } }] },
@@ -68,17 +69,13 @@ export default function AdminClients() {
   async function handleCreateClient(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const supabase = createClient();
-      if (import.meta.env.VITE_SUPABASE_URL) {
-        const { error } = await supabase.from('clients').insert([newClient]);
-        if (error) throw error;
-      } else {
-        // Mock add
-        setClients([{ ...newClient, id: Date.now().toString(), created_at: new Date().toISOString(), subscriptions: [] }, ...clients]);
-      }
+      await addDoc(collection(db, 'clients'), {
+        ...newClient,
+        created_at: new Date().toISOString()
+      });
       setIsCreateOpen(false);
       setNewClient({ name: '', business_name: '', email: '', phone: '', nif: '' });
-      if (import.meta.env.VITE_SUPABASE_URL) fetchClients();
+      fetchClients();
     } catch (err) {
       console.error('Error creating client:', err);
     }
@@ -86,10 +83,13 @@ export default function AdminClients() {
 
   async function deleteClient(id: string) {
     if (!confirm('Eliminar cliente também apagará as suas subscrições. Continuar?')) return;
-    const supabase = createClient();
-    await supabase.from('clients').delete().eq('id', id);
-    setClients(clients.filter(c => c.id !== id));
-    setIsDetailsOpen(false);
+    try {
+      await deleteDoc(doc(db, 'clients', id));
+      setClients(clients.filter(c => c.id !== id));
+      setIsDetailsOpen(false);
+    } catch (err) {
+      console.error('Erro ao eliminar cliente:', err);
+    }
   }
 
   const openDetails = (client: any) => {

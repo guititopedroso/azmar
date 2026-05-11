@@ -3,7 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Check, Loader2, Send } from 'lucide-react';
-import { createClient } from '../../lib/supabase/client';
+import { db } from '../../lib/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 const schema = z.object({
   name: z.string().min(2, 'Nome obrigatório'),
@@ -27,8 +28,7 @@ export default function ContactForm() {
   async function onSubmit(data: FormData) {
     setServerError('');
     try {
-      const supabase = createClient();
-      const { error } = await supabase.from('quote_requests').insert({
+      await addDoc(collection(db, 'quote_requests'), {
         name: data.name,
         email: data.email,
         phone: data.phone ?? null,
@@ -36,13 +36,11 @@ export default function ContactForm() {
         message: data.message,
         status: 'new',
         service: 'contacto',
+        created_at: new Date().toISOString(),
       });
-      if (error) {
-        setServerError('Erro ao enviar. Por favor contacta-nos por email.');
-        return;
-      }
       setSubmitted(true);
-    } catch {
+    } catch (err) {
+      console.error('Erro ao enviar contacto:', err);
       setServerError('Erro técnico. Por favor tenta mais tarde.');
     }
   }

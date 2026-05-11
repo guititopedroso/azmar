@@ -45,7 +45,7 @@ export default function AdminSettings() {
       setSettings({
         contact_email: 'geral@azmar.pt',
         contact_phone: '+351 912 345 678',
-        whatsapp_number: '351912345678',
+        whatsapp_number: '351932237817',
         location_text: 'Setúbal, Portugal',
         instagram_url: 'https://instagram.com/azmar.pt',
         linkedin_url: 'https://linkedin.com/company/azmar-pt',

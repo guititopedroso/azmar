@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { createClient } from '../lib/supabase/client';
 import ClientSidebar from '../components/dashboard/ClientSidebar';
 import { FileText, ExternalLink } from 'lucide-react';
+=======
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { LayoutDashboard, LogOut, User, Package, CreditCard, FileText } from 'lucide-react';
+>>>>>>> 572032653bd0fa9c00e26a2eb908d50f51383728
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -11,6 +17,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
+<<<<<<< HEAD
     async function init() {
       try {
         const supabase = createClient();
@@ -49,6 +56,23 @@ export default function Dashboard() {
     }
     init();
   }, [navigate]);
+=======
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate('/login');
+      } else {
+        setUser(user);
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
+
+  async function handleLogout() {
+    await signOut(auth);
+    navigate('/login');
+  }
+>>>>>>> 572032653bd0fa9c00e26a2eb908d50f51383728
 
   if (loading) {
     return (

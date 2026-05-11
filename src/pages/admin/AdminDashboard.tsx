@@ -10,7 +10,8 @@ import {
   Loader2
 } from 'lucide-react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { createClient } from '../../lib/supabase/client';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, query, where, orderBy, limit, count } from 'firebase/firestore';
 
 interface DashboardData {
   totalClients: number;
@@ -39,59 +40,61 @@ export default function AdminDashboard() {
   async function fetchDashboardData() {
     setLoading(true);
     try {
-      const supabase = createClient();
-      
-      // Se não houver configuração, nem tentamos para evitar erros no console
-      if (!import.meta.env.VITE_SUPABASE_URL) {
-        throw new Error('Supabase not configured');
-      }
-
       // 1. Total Clientes
-      const { count: clientsCount } = await supabase.from('clients').select('*', { count: 'exact', head: true });
+      const clientsSnapshot = await getDocs(collection(db, 'clients'));
+      const clientsCount = clientsSnapshot.size;
       
       // 2. Faturação Mensal
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0,0,0,0);
       
-      const { data: billingData } = await supabase
-        .from('invoices')
-        .select('amount')
-        .eq('status', 'paid')
-        .gte('created_at', startOfMonth.toISOString());
-      
-      const totalBilling = billingData?.reduce((acc, inv) => acc + inv.amount, 0) || 0;
+      const invoicesRef = collection(db, 'invoices');
+      const billingQuery = query(
+        invoicesRef, 
+        where('status', '==', 'paid'), 
+        where('created_at', '>=', startOfMonth.toISOString())
+      );
+      const billingSnapshot = await getDocs(billingQuery);
+      const totalBilling = billingSnapshot.docs.reduce((acc, doc) => acc + (doc.data().amount || 0), 0);
 
       // 3. Faturas Pendentes
-      const { count: pendingCount } = await supabase
-        .from('invoices')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
+      const pendingQuery = query(invoicesRef, where('status', '==', 'pending'));
+      const pendingSnapshot = await getDocs(pendingQuery);
+      const pendingCount = pendingSnapshot.size;
 
       // 4. Leads Ativos
-      const { count: leadsCount } = await supabase
-        .from('quote_requests')
-        .select('*', { count: 'exact', head: true })
-        .in('status', ['new', 'contacted', 'in_proposal']);
+      const leadsRef = collection(db, 'quote_requests');
+      const leadsQuery = query(
+        leadsRef, 
+        where('status', 'in', ['new', 'contacted', 'in_proposal'])
+      );
+      const leadsSnapshot = await getDocs(leadsQuery);
+      const leadsCount = leadsSnapshot.size;
 
       // 5. Últimas Faturas
-      const { data: invoices } = await supabase
-        .from('invoices')
-        .select('*, client:clients(business_name)')
-        .order('created_at', { ascending: false })
-        .limit(5);
+      const recentInvoicesQuery = query(
+        invoicesRef, 
+        orderBy('created_at', 'desc'), 
+        limit(5)
+      );
+      const recentInvoicesSnapshot = await getDocs(recentInvoicesQuery);
+      const invoices = recentInvoicesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
       setData({
-        totalClients: clientsCount || 0,
+        totalClients: clientsCount,
         monthlyBilling: totalBilling,
-        pendingInvoices: pendingCount || 0,
-        activeLeads: leadsCount || 0,
-        recentInvoices: invoices || [],
+        pendingInvoices: pendingCount,
+        activeLeads: leadsCount,
+        recentInvoices: invoices,
         recentActivity: []
       });
     } catch (err) {
-      console.warn('Usando Mock Data devido a erro ou falta de configuração:', err);
-      // Fallback para Mock Data para o user não ver página branca
+      console.warn('Erro ao carregar dados do Firestore:', err);
+      // Fallback para Mock Data
       setData({
         totalClients: 12,
         monthlyBilling: 850,
@@ -134,11 +137,6 @@ export default function AdminDashboard() {
             <h1 className="text-3xl font-bold text-white font-outfit mb-2">Painel de Gestão</h1>
             <p className="text-gray-400 text-sm">Bem-vindo ao centro de controlo da AZMAR.</p>
           </div>
-          {!import.meta.env.VITE_SUPABASE_URL && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 px-4 py-2 rounded-xl">
-              <p className="text-yellow-500 text-xs font-bold uppercase tracking-wider">Modo Demonstração</p>
-            </div>
-          )}
         </div>
 
         {/* Stats Grid */}

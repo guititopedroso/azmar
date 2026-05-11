@@ -3,11 +3,31 @@ import { Check, X, ArrowRight } from 'lucide-react';
 
 const packages = [
   {
+    id: 'onetime',
+    name: 'Pack One-Time',
+    desc: 'Entrega de ficheiros pronta a alojar. Ideal se já tens o teu próprio servidor.',
+    setup: 300,
+    monthly: 0,
+    badge: 'Ficheiros ZIP',
+    highlight: false,
+    features: [
+      'Website completo (ficheiros estáticos)',
+      'Design Responsivo',
+      'Código limpo e otimizado',
+      'Entrega em ficheiro .ZIP',
+      'Instruções de alojamento',
+      'Sem subscrições mensais',
+      { label: 'Hospedagem incluída', value: false },
+      { label: 'Domínio incluído', value: false },
+      { label: 'Manutenção mensal', value: false },
+    ],
+  },
+  {
     id: 'start',
     name: 'Pack Start',
     desc: 'Para negócios que precisam de presença digital básica e profissional.',
-    setup: 150,
-    monthly: 25,
+    setup: 180,
+    monthly: 50,
     badge: null,
     highlight: false,
     features: [
@@ -29,8 +49,8 @@ const packages = [
     id: 'business',
     name: 'Pack Business',
     desc: 'Website completo e imagem mais profissional para o teu negócio.',
-    setup: 400,
-    monthly: 60,
+    setup: 380,
+    monthly: 100,
     badge: 'Mais popular',
     highlight: true,
     features: [
@@ -53,14 +73,13 @@ const packages = [
     name: 'Pack Growth',
     desc: 'Website, marketing e acompanhamento contínuo para crescer online.',
     setup: 750,
-    monthly: 150,
+    monthly: 250,
     badge: 'Completo',
     highlight: false,
     features: [
       'Website completo (páginas ilimitadas)',
       'Branding básico',
       'Gestão de redes sociais',
-      'Criação de conteúdos mensais',
       'Estratégia digital',
       'Google Business otimizado',
       'Meta Ads setup',
@@ -109,8 +128,7 @@ const compareRows = [
   { label: 'Meta Ads setup', start: false, business: false, growth: true },
   { label: 'Google Business', start: false, business: 'SEO básico', growth: 'Completo' },
   { label: 'Relatório mensal', start: false, business: false, growth: true },
-  { label: 'Setup', start: 'A partir de 150€', business: 'A partir de 400€', growth: 'A partir de 750€' },
-  { label: 'Mensalidade', start: '25€/mês', business: '60€/mês', growth: '150€/mês' },
+  { label: 'Mensalidade', start: '50€/mês', business: '100€/mês', growth: '250€/mês' },
 ];
 
 function CellValue({ val }: { val: boolean | string }) {
@@ -153,7 +171,7 @@ export default function Packages() {
       {/* Packages Cards */}
       <section className="section">
         <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             {packages.map((pkg) => (
               <div
                 key={pkg.id}
@@ -176,15 +194,12 @@ export default function Packages() {
                   <p className="text-[#94a3b8] text-sm">{pkg.desc}</p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-[rgba(7,20,40,0.5)] border border-[rgba(30,80,160,0.2)] mb-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-outfit font-bold text-white">
-                      {pkg.setup}€
-                    </span>
-                    <span className="text-[#94a3b8] text-sm">setup</span>
+                <div className="p-4 rounded-xl bg-[rgba(7,20,40,0.5)] border border-[rgba(30,80,160,0.2)] mb-6 text-center">
+                  <div className="text-4xl font-outfit font-bold text-white">
+                    {pkg.monthly > 0 ? `${pkg.monthly}€` : `${pkg.setup}€`}
                   </div>
                   <div className="text-[#94a3b8] text-sm mt-1">
-                    + {pkg.monthly}€/mês
+                    {pkg.monthly > 0 ? 'por mês' : 'pagamento único'}
                   </div>
                 </div>
 

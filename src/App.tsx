@@ -36,6 +36,8 @@ function ScrollToTop() {
   return null;
 }
 
+import AdminAuthGuard from './components/admin/AdminAuthGuard';
+
 const App = () => {
   return (
     <BrowserRouter>
@@ -45,12 +47,14 @@ const App = () => {
           {/* Rota de Login sem Header/Footer */}
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/clientes" element={<AdminClients />} />
-          <Route path="/admin/leads" element={<AdminLeads />} />
-          <Route path="/admin/faturas" element={<AdminInvoices />} />
-          <Route path="/admin/portfolio" element={<AdminPortfolio />} />
-          <Route path="/admin/config" element={<AdminSettings />} />
+          
+          {/* Rotas de Administração Protegidas */}
+          <Route path="/admin" element={<AdminAuthGuard><AdminDashboard /></AdminAuthGuard>} />
+          <Route path="/admin/clientes" element={<AdminAuthGuard><AdminClients /></AdminAuthGuard>} />
+          <Route path="/admin/leads" element={<AdminAuthGuard><AdminLeads /></AdminAuthGuard>} />
+          <Route path="/admin/faturas" element={<AdminAuthGuard><AdminInvoices /></AdminAuthGuard>} />
+          <Route path="/admin/portfolio" element={<AdminAuthGuard><AdminPortfolio /></AdminAuthGuard>} />
+          <Route path="/admin/config" element={<AdminAuthGuard><AdminSettings /></AdminAuthGuard>} />
 
           {/* Rotas Públicas com Header/Footer */}
           <Route

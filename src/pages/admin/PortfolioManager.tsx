@@ -13,16 +13,18 @@ import {
   Upload,
   Loader2
 } from 'lucide-react';
-import { createClient } from '../../lib/supabase/client';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 
 interface Project {
-  id: string | number;
+  id: string;
   name: string;
   category: 'website' | 'branding' | 'marketing' | 'social' | 'event' | 'sport';
   status: 'public' | 'hidden';
   cover_url: string;
   website_url?: string;
   short_description?: string;
+  order?: number;
 }
 
 export default function AdminPortfolio() {
@@ -39,26 +41,12 @@ export default function AdminPortfolio() {
   async function fetchProjects() {
     setIsLoading(true);
     try {
-      const supabase = createClient();
-      if (!import.meta.env.VITE_SUPABASE_URL) throw new Error('No Supabase');
-
-      const { data, error } = await supabase
-        .from('portfolio_projects')
-        .select('*')
-        .order('order', { ascending: true });
-      
-      if (!error && data) {
-        setProjects(data);
-      } else {
-        throw new Error('Error fetching');
-      }
+      const q = query(collection(db, 'portfolio_projects'), orderBy('order', 'asc'));
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Project[];
+      setProjects(data);
     } catch (err) {
-      console.warn('Mock Data for Portfolio');
-      setProjects([
-        { id: 1, name: 'Restaurante Sabor', category: 'website', status: 'public', cover_url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80' },
-        { id: 2, name: 'Clínica Sorriso', category: 'branding', status: 'public', cover_url: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=800&q=80' },
-        { id: 3, name: 'Eco Store', category: 'marketing', status: 'public', cover_url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80' },
-      ]);
+      console.error('Error fetching projects:', err);
     }
     setIsLoading(false);
   }
@@ -70,7 +58,8 @@ export default function AdminPortfolio() {
       status: 'hidden',
       cover_url: '',
       website_url: '',
-      short_description: ''
+      short_description: '',
+      order: projects.length
     });
     setIsModalOpen(true);
   };
@@ -79,30 +68,39 @@ export default function AdminPortfolio() {
     e.preventDefault();
     if (!editingProject) return;
 
+    // Normalizar URL
+    let websiteUrl = editingProject.website_url || '';
+    if (websiteUrl && !websiteUrl.startsWith('http') && !websiteUrl.startsWith('//')) {
+      websiteUrl = `https://${websiteUrl}`;
+    }
+
+    const projectToSave = { ...editingProject, website_url: websiteUrl };
+
     try {
-      const supabase = createClient();
-      if (editingProject.id && typeof editingProject.id === 'string') {
-        await supabase.from('portfolio_projects').update(editingProject).eq('id', editingProject.id);
-      } else if (!editingProject.id) {
-        await supabase.from('portfolio_projects').insert([{ ...editingProject, slug: editingProject.name?.toLowerCase().replace(/ /g, '-') }]);
+      if (projectToSave.id) {
+        const { id, ...rest } = projectToSave;
+        await updateDoc(doc(db, 'portfolio_projects', id), rest);
+      } else {
+        await addDoc(collection(db, 'portfolio_projects'), {
+          ...projectToSave,
+          created_at: new Date().toISOString()
+        });
       }
+      setIsModalOpen(false);
+      fetchProjects();
     } catch (err) {
       console.error('Error saving:', err);
     }
-    
-    setIsModalOpen(false);
-    fetchProjects();
   };
 
-  const handleDelete = async (id: string | number) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Tens a certeza que queres eliminar este projeto?')) {
       try {
-        const supabase = createClient();
-        await supabase.from('portfolio_projects').delete().eq('id', id);
+        await deleteDoc(doc(db, 'portfolio_projects', id));
+        fetchProjects();
       } catch (err) {
         console.error('Error deleting:', err);
       }
-      fetchProjects();
     }
   };
 
@@ -154,13 +152,37 @@ export default function AdminPortfolio() {
             <>
               {filteredProjects.map((project) => (
                 <div key={project.id} className="group relative bg-[#0a1c38]/50 rounded-2xl overflow-hidden border border-white/5 hover:border-teal-400/30 transition-all">
-                  <div className="aspect-video relative overflow-hidden">
-                    <img 
-                      src={project.cover_url} 
-                      alt={project.name} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-[#030d1a] to-transparent opacity-60"></div>
+                  <div className="aspect-video relative overflow-hidden bg-[#030d1a] border-b border-white/5 flex items-center justify-center">
+                    {(() => {
+                      const url = project.website_url && !project.website_url.startsWith('http') 
+                        ? `https://${project.website_url}` 
+                        : project.website_url;
+                      
+                      return url ? (
+                        <div className="w-full h-full pointer-events-none select-none relative">
+                          <iframe 
+                            src={url} 
+                            title={project.name}
+                            className="absolute top-0 left-0 border-none opacity-60"
+                            style={{
+                              width: '400%',
+                              height: '400%',
+                              transform: 'scale(0.25)',
+                              transformOrigin: '0 0',
+                            }}
+                          />
+                        </div>
+                      ) : project.cover_url ? (
+                        <img 
+                          src={project.cover_url} 
+                          alt={project.name} 
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-60"
+                        />
+                      ) : (
+                        <span className="text-teal-400/20 font-bold text-4xl">AZMAR</span>
+                      );
+                    })()}
+                    <div className="absolute inset-0 bg-linear-to-t from-[#030d1a] to-transparent opacity-40"></div>
                     <div className="absolute top-4 right-4">
                       <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         project.status === 'public' ? 'bg-green-500/20 text-green-400 border border-green-500/20' : 'bg-gray-500/20 text-gray-400 border border-gray-500/20'
@@ -252,24 +274,24 @@ export default function AdminPortfolio() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="form-group">
-                  <label className="label">URL da Imagem de Capa</label>
+                  <label className="label">URL do Website (Live Preview)</label>
                   <input 
                     required 
+                    type="text" 
+                    className="input border-teal-400/30" 
+                    placeholder="https://exemplo.com"
+                    value={editingProject.website_url}
+                    onChange={e => setEditingProject({...editingProject, website_url: e.target.value})}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="label">URL da Imagem (Fallback)</label>
+                  <input 
                     type="text" 
                     className="input" 
                     placeholder="https://..."
                     value={editingProject.cover_url}
                     onChange={e => setEditingProject({...editingProject, cover_url: e.target.value})}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="label">URL do Website (opcional)</label>
-                  <input 
-                    type="text" 
-                    className="input" 
-                    placeholder="https://..."
-                    value={editingProject.website_url}
-                    onChange={e => setEditingProject({...editingProject, website_url: e.target.value})}
                   />
                 </div>
               </div>

@@ -5,25 +5,22 @@ import { MessageCircle, X, Send, Phone, User, Mail } from 'lucide-react';
 export default function WhatsAppContact() {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  
-  // Esconder em páginas específicas
-  const hiddenPaths = ['/login', '/admin', '/dashboard'];
-  const isHidden = hiddenPaths.some(path => location.pathname.startsWith(path));
-
-  if (isHidden) return null;
-
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: ''
   });
+  
+  // Esconder em páginas específicas
+  const hiddenPaths = ['/login', '/admin', '/dashboard'];
+  const isHidden = hiddenPaths.some(path => location.pathname.startsWith(path));
 
+  if (isHidden) return null;
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Configurações do WhatsApp
-    const whatsappNumber = "351912345678"; // Substituir pelo real
+    const whatsappNumber = "351932237817"; // Número AZMAR
     const message = `Olá AZMAR! 👋%0A%0A*Novo Pedido de Contacto*%0A*Nome:* ${formData.firstName} ${formData.lastName}%0A*Email:* ${formData.email}%0A*Telemóvel:* ${formData.phone}%0A%0AAguardando contacto!`;
     
     // Abrir WhatsApp
@@ -115,7 +112,7 @@ export default function WhatsAppContact() {
                   <input
                     required
                     type="tel"
-                    placeholder="912 345 678"
+                    placeholder="932 237 817"
                     className="w-full bg-white/5 border border-white/10 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-teal-400 transition-all text-sm"
                     value={formData.phone}
                     onChange={(e) => setFormData({...formData, phone: e.target.value})}

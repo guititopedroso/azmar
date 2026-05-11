@@ -6,7 +6,7 @@ import { MessageCircle } from 'lucide-react';
 const faqs = [
   {
     q: 'Quanto custa criar um website com a AZMAR?',
-    a: 'O valor depende do tipo de projeto. O nosso Pack Start começa a partir de 150€ de setup + 25€/mês. Para projetos mais completos, o Pack Business começa em 400€ + 60€/mês e o Pack Growth em 750€ + 150€/mês. Para projetos específicos ou personalizados, fazemos sempre uma proposta à medida.',
+    a: 'O valor depende do tipo de projeto. O nosso Pack Start é 50€/mês, o Pack Business é 100€/mês e o Pack Growth é 250€/mês. Temos também o Pack One-Time por 300€ (pagamento único). Para projetos específicos ou personalizados, fazemos sempre uma proposta à medida.',
   },
   {
     q: 'Trabalham apenas em Setúbal?',
@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     q: 'Fazem manutenção mensal?',
-    a: 'Sim. Todos os nossos pacotes de website incluem a opção de manutenção mensal. Isso inclui atualizações, backups, verificação de links, pequenas alterações de conteúdo e apoio técnico.',
+    a: 'Sim. Todos os nossos pacotes de subscrição (Start, Business e Growth) incluem manutenção mensal com atualizações, backups e apoio técnico. O Pack One-Time é a única exceção, pois nesse plano a manutenção fica a cargo do cliente após a entrega dos ficheiros.',
   },
   {
     q: 'Posso pedir só o website sem marketing?',
@@ -22,7 +22,7 @@ const faqs = [
   },
   {
     q: 'Fazem gestão de redes sociais?',
-    a: 'Sim. A gestão de redes sociais está incluída no Pack Growth e pode ser adicionada como serviço avulso nos outros pacotes. Inclui criação de conteúdos, publicações regulares e planeamento de conteúdo.',
+    a: 'Sim. A gestão de redes sociais está incluída no Pack Growth e pode ser adicionada como serviço avulso nos outros pacotes. Inclui publicações regulares e planeamento de conteúdo.',
   },
   {
     q: 'Os pacotes têm fidelização?',
