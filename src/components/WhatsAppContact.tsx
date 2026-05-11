@@ -48,7 +48,7 @@ export default function WhatsAppContact() {
 
       {/* Modal Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 bg-[#030d1a]/80 backdrop-blur-sm z-60 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[#030d1a]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           {/* Modal Content */}
           <div className="bg-[#071428] w-full max-w-md rounded-3xl border border-white/10 shadow-2xl overflow-hidden relative animate-in fade-in zoom-in duration-300">
             {/* Header */}
