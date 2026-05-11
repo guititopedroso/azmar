@@ -15,7 +15,8 @@ import {
   Euro,
   User
 } from 'lucide-react';
-import { createClient } from '../../lib/supabase/client';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, addDoc, query, orderBy, doc, getDoc } from 'firebase/firestore';
 
 // Usar imports padrão que costumam ser mais estáveis em Vite/React
 import { jsPDF } from 'jspdf';
@@ -43,10 +44,11 @@ export default function AdminInvoices() {
 
   async function fetchClients() {
     try {
-      const supabase = createClient();
-      const { data } = await supabase.from('clients').select('id, business_name, name, nif, email');
-      if (data) setClients(data);
-    } catch {
+      const snapshot = await getDocs(collection(db, 'clients'));
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setClients(data);
+    } catch (err) {
+      console.error('Error fetching clients:', err);
       setClients([
         { id: '1', business_name: 'Restaurante Sabor', name: 'João Silva', nif: '123456789', email: 'joao@sabor.pt' }, 
         { id: '2', business_name: 'Eco Store', name: 'Maria Santos', nif: '987654321', email: 'maria@ecostore.pt' }
@@ -57,18 +59,34 @@ export default function AdminInvoices() {
   async function fetchInvoices() {
     setIsLoading(true);
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*, client:clients(business_name, nif, name, email)')
-        .order('created_at', { ascending: false });
+      const q = query(collection(db, 'invoices'), orderBy('created_at', 'desc'));
+      const snapshot = await getDocs(q);
       
-      if (!error && data) {
-        setInvoices(data);
-      } else {
-        throw new Error('Supabase fail');
-      }
+      const invoicesData = await Promise.all(snapshot.docs.map(async (invoiceDoc) => {
+        const invoiceData = invoiceDoc.data();
+        let clientData = null;
+        
+        if (invoiceData.client_id) {
+          try {
+            const clientDoc = await getDoc(doc(db, 'clients', invoiceData.client_id));
+            if (clientDoc.exists()) {
+              clientData = clientDoc.data();
+            }
+          } catch (e) {
+            console.warn('Could not fetch client for invoice', invoiceDoc.id);
+          }
+        }
+        
+        return {
+          id: invoiceDoc.id,
+          ...invoiceData,
+          client: clientData
+        };
+      }));
+      
+      setInvoices(invoicesData);
     } catch (err) {
+      console.error('Error fetching invoices:', err);
       setInvoices([
         { id: 'INV-2024-001', amount: 350, status: 'paid', created_at: new Date().toISOString(), client: { business_name: 'Restaurante Sabor', nif: '123456789', email: 'joao@sabor.pt' } },
         { id: 'INV-2024-002', amount: 120, status: 'pending', created_at: new Date().toISOString(), client: { business_name: 'Eco Store', nif: '987654321', email: 'maria@ecostore.pt' } },
@@ -135,43 +153,36 @@ export default function AdminInvoices() {
     }
 
     try {
-      const supabase = createClient();
-      let createdInvoice;
+      const docRef = await addDoc(collection(db, 'invoices'), {
+        client_id: newInvoice.client_id,
+        amount: parseFloat(newInvoice.amount),
+        status: newInvoice.status,
+        description: newInvoice.description,
+        created_at: new Date().toISOString()
+      });
 
-      if (import.meta.env.VITE_SUPABASE_URL) {
-        const { data, error } = await supabase.from('invoices').insert([{
-          client_id: newInvoice.client_id,
-          amount: parseFloat(newInvoice.amount),
-          status: newInvoice.status,
-          description: newInvoice.description
-        }]).select('*, client:clients(business_name, nif, name, email)').single();
-        
-        if (error) throw error;
-        createdInvoice = data;
-      } else {
-        const client = clients.find(c => c.id === newInvoice.client_id);
-        createdInvoice = {
-          id: 'DEMO-' + Math.random().toString(36).substr(2, 6).toUpperCase(),
-          amount: parseFloat(newInvoice.amount),
-          status: newInvoice.status,
-          description: newInvoice.description,
-          created_at: new Date().toISOString(),
-          client: { 
-            business_name: client?.business_name || 'Desconhecido',
-            nif: client?.nif || 'N/A',
-            email: client?.email || '',
-            name: client?.name || ''
-          }
-        };
-        setInvoices([createdInvoice, ...invoices]);
-      }
+      const client = clients.find(c => c.id === newInvoice.client_id);
+      const createdInvoice = {
+        id: docRef.id,
+        amount: parseFloat(newInvoice.amount),
+        status: newInvoice.status,
+        description: newInvoice.description,
+        created_at: new Date().toISOString(),
+        client: { 
+          business_name: client?.business_name || 'Desconhecido',
+          nif: client?.nif || 'N/A',
+          email: client?.email || '',
+          name: client?.name || ''
+        }
+      };
 
+      setInvoices([createdInvoice, ...invoices]);
       setIsCreateOpen(false);
       // Pequeno delay para garantir que a modal fechou antes do download começar
       setTimeout(() => generatePDF(createdInvoice), 300);
       
     } catch (err) {
-      console.error('DB Error:', err);
+      console.error('Firestore Error:', err);
       alert('Erro ao guardar fatura. Verifique a consola.');
     }
   };

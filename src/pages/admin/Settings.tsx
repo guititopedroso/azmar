@@ -11,7 +11,8 @@ import {
   Loader2,
   CheckCircle2
 } from 'lucide-react';
-import { createClient } from '../../lib/supabase/client';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, setDoc, doc } from 'firebase/firestore';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState<any>({});
@@ -26,20 +27,14 @@ export default function AdminSettings() {
   async function fetchSettings() {
     setIsLoading(true);
     try {
-      const supabase = createClient();
-      if (!import.meta.env.VITE_SUPABASE_URL) throw new Error('No Supabase');
+      const snapshot = await getDocs(collection(db, 'site_settings'));
+      if (snapshot.empty) throw new Error('No settings found');
 
-      const { data, error } = await supabase.from('site_settings').select('*');
-      
-      if (!error && data) {
-        const settingsMap = data.reduce((acc: any, curr: any) => {
-          acc[curr.key] = curr.value;
-          return acc;
-        }, {});
-        setSettings(settingsMap);
-      } else {
-        throw new Error('Error fetching');
-      }
+      const settingsMap = snapshot.docs.reduce((acc: any, curr: any) => {
+        acc[curr.id] = curr.data().value;
+        return acc;
+      }, {});
+      setSettings(settingsMap);
     } catch (err) {
       console.warn('Mock Data for Settings');
       setSettings({
@@ -61,12 +56,10 @@ export default function AdminSettings() {
     setSaveSuccess(false);
 
     try {
-      const supabase = createClient();
-      const updates = Object.entries(settings).map(([key, value]) => ({
-        key,
-        value
-      }));
-      await supabase.from('site_settings').upsert(updates);
+      const promises = Object.entries(settings).map(([key, value]) => 
+        setDoc(doc(db, 'site_settings', key), { value })
+      );
+      await Promise.all(promises);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {

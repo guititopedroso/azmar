@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 
 interface NavItem {
   href: string;
@@ -80,8 +81,7 @@ export default function AdminSidebar({ user, role }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut(auth);
     navigate('/');
   }
 
