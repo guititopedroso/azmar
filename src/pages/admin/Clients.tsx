@@ -54,7 +54,7 @@ export default function AdminClients() {
       
       // Para simular o join das subscrições (opcional, pode ser feito separadamente se necessário)
       // Por agora, garantimos que não rebenta se faltar
-      setClients(data.map(c => ({ ...c, subscriptions: c.subscriptions || [] })));
+      setClients(data.map((c: any) => ({ ...c, subscriptions: c.subscriptions || [] })));
     } catch (err) {
       console.warn('Erro ao carregar clientes do Firestore:', err);
       // Fallback para Mock Data

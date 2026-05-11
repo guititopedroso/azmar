@@ -24,6 +24,7 @@ interface Project {
   website_url?: string;
   featured?: boolean;
   status: string;
+  order?: number;
 }
 
 function ProjectCard({ project }: { project: Project }) {
