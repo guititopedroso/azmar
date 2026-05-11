@@ -114,7 +114,7 @@ function AccordionItem({ question, answer }: { question: string; answer: string 
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div 
+    <div
       className={`card cursor-pointer transition-all duration-300 ${isOpen ? 'border-[rgba(45,212,191,0.3)] shadow-[0_0_30px_rgba(45,212,191,0.05)]' : ''}`}
       onClick={() => setIsOpen(!isOpen)}
     >
@@ -126,7 +126,7 @@ function AccordionItem({ question, answer }: { question: string; answer: string 
           <ChevronDown className="w-5 h-5" />
         </div>
       </div>
-      
+
       <AnimatePresence>
         {isOpen && (
           <motion.div
