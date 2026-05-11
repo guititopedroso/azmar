@@ -1,14 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
-import { createClient } from '../lib/supabase/client';
+import { auth, db } from '../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import ClientSidebar from '../components/dashboard/ClientSidebar';
 import { FileText, ExternalLink } from 'lucide-react';
-=======
-import { auth } from '../lib/firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { LayoutDashboard, LogOut, User, Package, CreditCard, FileText } from 'lucide-react';
->>>>>>> 572032653bd0fa9c00e26a2eb908d50f51383728
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -17,62 +13,25 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-<<<<<<< HEAD
-    async function init() {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          // Fallback para Demo se não houver Supabase configurado
-          if (!import.meta.env.VITE_SUPABASE_URL) {
-            console.log('Using mock user for demo');
-            setUser({ email: 'cliente.demo@azmar.pt', id: 'mock-id' });
-            setProfile({ full_name: 'Cliente Demo' });
-            setLoading(false);
-            return;
-          }
-          navigate('/login');
-          return;
-        }
-
-        setUser(user);
-        
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        setProfile(profile);
-      } catch (error) {
-        console.error('Auth error:', error);
-        // Fallback no erro também para manter a demo funcional
-        setUser({ email: 'cliente.demo@azmar.pt', id: 'mock-id' });
-        setProfile({ full_name: 'Cliente Demo' });
-      } finally {
-        setLoading(false);
-      }
-    }
-    init();
-  }, [navigate]);
-=======
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         navigate('/login');
       } else {
         setUser(user);
+        try {
+          const docRef = doc(db, 'profiles', user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setProfile(docSnap.data());
+          }
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+        }
         setLoading(false);
       }
     });
     return () => unsubscribe();
   }, [navigate]);
-
-  async function handleLogout() {
-    await signOut(auth);
-    navigate('/login');
-  }
->>>>>>> 572032653bd0fa9c00e26a2eb908d50f51383728
 
   if (loading) {
     return (

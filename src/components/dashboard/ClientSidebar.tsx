@@ -1,5 +1,3 @@
-'use client';
-
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -15,9 +13,9 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn, getInitials } from '@/lib/utils';
-import { createClient } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
-import type { Profile } from '@/lib/types';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -30,7 +28,7 @@ const navItems = [
 
 interface Props {
   user: User;
-  profile: Profile | null;
+  profile: any | null;
 }
 
 export default function ClientSidebar({ user, profile }: Props) {
@@ -40,8 +38,7 @@ export default function ClientSidebar({ user, profile }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut(auth);
     navigate('/');
   }
 
