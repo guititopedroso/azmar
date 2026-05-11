@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import { createClient } from '../../lib/supabase/client';
+import { db } from '../../lib/firebase';
+import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { 
   Mail, 
   Phone, 
@@ -33,34 +34,39 @@ export default function AdminLeads() {
   async function fetchLeads() {
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('quote_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setLeads(data);
-      }
+      const q = query(collection(db, 'quote_requests'), orderBy('created_at', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const data = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setLeads(data);
     } catch (err) {
-      console.error(err);
+      console.error('Erro ao carregar leads:', err);
     }
     setLoading(false);
   }
 
   async function updateStatus(id: string, newStatus: string) {
     setUpdatingId(id);
-    const supabase = createClient();
-    await supabase.from('quote_requests').update({ status: newStatus }).eq('id', id);
-    setLeads(leads.map(l => l.id === id ? { ...l, status: newStatus } : l));
+    try {
+      const leadRef = doc(db, 'quote_requests', id);
+      await updateDoc(leadRef, { status: newStatus });
+      setLeads(leads.map(l => l.id === id ? { ...l, status: newStatus } : l));
+    } catch (err) {
+      console.error('Erro ao atualizar status:', err);
+    }
     setUpdatingId(null);
   }
 
   async function deleteLead(id: string) {
     if (!confirm('Eliminar esta lead permanentemente?')) return;
-    const supabase = createClient();
-    await supabase.from('quote_requests').delete().eq('id', id);
-    setLeads(leads.filter(l => l.id !== id));
+    try {
+      await deleteDoc(doc(db, 'quote_requests', id));
+      setLeads(leads.filter(l => l.id !== id));
+    } catch (err) {
+      console.error('Erro ao eliminar lead:', err);
+    }
   }
 
   const handleContact = (lead: any) => {

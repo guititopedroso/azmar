@@ -83,10 +83,26 @@ const steps = [
 
 const packages = [
   {
+    name: 'Pack One-Time',
+    desc: 'Ficheiros do website prontos a alojar. Sem subscrições.',
+    setup: '300€',
+    monthly: 'Pagamento Único',
+    features: [
+      'Website completo',
+      'Código-fonte ZIP',
+      'Design Responsivo',
+      'Instruções incluídas',
+      'Propriedade total',
+    ],
+    cta: '/orcamento?pack=onetime',
+    highlight: false,
+    badge: 'ZIP',
+  },
+  {
     name: 'Pack Start',
     desc: 'Para negócios que precisam de presença digital básica e profissional.',
-    setup: '150€',
-    monthly: '25€/mês',
+    setup: '180€',
+    monthly: '50€/mês',
     features: [
       'Landing page simples',
       'Design responsivo',
@@ -100,8 +116,8 @@ const packages = [
   {
     name: 'Pack Business',
     desc: 'Website completo e imagem mais profissional.',
-    setup: '400€',
-    monthly: '60€/mês',
+    setup: '380€',
+    monthly: '100€/mês',
     features: [
       'Website até 5 páginas',
       'Google Maps integrado',
@@ -117,7 +133,7 @@ const packages = [
     name: 'Pack Growth',
     desc: 'Website, marketing e acompanhamento contínuo.',
     setup: '750€',
-    monthly: '150€/mês',
+    monthly: '250€/mês',
     features: [
       'Website completo',
       'Branding básico',
@@ -408,7 +424,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {packages.map((pkg) => (
               <div
                 key={pkg.name}
@@ -427,15 +443,12 @@ export default function Home() {
                   <h3 className="text-white text-xl mb-1">{pkg.name}</h3>
                   <p className="text-[#94a3b8] text-sm">{pkg.desc}</p>
                 </div>
-                <div className="mb-6">
-                  <div className="text-3xl font-bold text-white">
+                <div className="mb-6 text-center p-4 rounded-xl bg-white/5 border border-white/5">
+                  <div className="text-4xl font-bold text-white font-outfit">
                     {pkg.setup}
-                    <span className="text-sm font-normal text-[#94a3b8] ml-1">
-                      setup
-                    </span>
                   </div>
                   <div className="text-[#94a3b8] text-sm mt-1">
-                    + {pkg.monthly}
+                    {pkg.monthly.includes('mês') ? 'por mês' : 'pagamento único'}
                   </div>
                 </div>
                 <ul className="space-y-2.5 mb-8 flex-1">

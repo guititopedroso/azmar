@@ -97,7 +97,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://wa.me/351912345678"
+                href="https://wa.me/351932237817"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp AZMAR"
@@ -165,11 +165,11 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="tel:+351912345678"
+                  href="tel:+351932237817"
                   className="flex items-center gap-2 text-[#94a3b8] text-sm hover:text-white transition-colors"
                 >
                   <Phone className="w-4 h-4 shrink-0 text-[#2dd4bf]" />
-                  +351 912 345 678
+                  +351 932 237 817
                 </a>
               </li>
             </ul>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createClient } from '../lib/supabase/client';
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { LayoutDashboard, LogOut, User, Package, CreditCard, FileText } from 'lucide-react';
 
 export default function Dashboard() {
@@ -9,23 +10,19 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    async function getUser() {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         navigate('/login');
-        return;
+      } else {
+        setUser(user);
+        setLoading(false);
       }
-      setUser(user);
-      setLoading(loading);
-      setLoading(false);
-    }
-    getUser();
+    });
+    return () => unsubscribe();
   }, [navigate]);
 
   async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await signOut(auth);
     navigate('/login');
   }
 

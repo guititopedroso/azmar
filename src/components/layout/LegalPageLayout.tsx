@@ -1,4 +1,3 @@
-import { AlertTriangle } from 'lucide-react';
 
 interface LegalPageLayoutProps {
   title: string;
@@ -33,16 +32,6 @@ export default function LegalPageLayout({
 
       <section className="section">
         <div className="container-sm">
-          {/* Disclaimer banner */}
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-[rgba(251,191,36,0.08)] border border-[rgba(251,191,36,0.2)] mb-10">
-            <AlertTriangle className="w-5 h-5 text-[#fbbf24] shrink-0 mt-0.5" />
-            <p className="text-[#94a3b8] text-sm">
-              <strong className="text-[#fbbf24]">Nota importante:</strong> Este
-              documento é um rascunho informativo e deve ser validado por um
-              advogado ou contabilista antes da publicação final. Não substitui
-              aconselhamento jurídico profissional.
-            </p>
-          </div>
 
           <div className="card prose-legal">
             {children}
