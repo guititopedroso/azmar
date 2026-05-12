@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Waves, Mail, Phone } from 'lucide-react';
 
 const services = [
@@ -29,27 +29,31 @@ const quickLinks = [
 
 export default function Footer() {
   const year = new Date().getFullYear();
+  const location = useLocation();
+  const isPortfolioPage = location.pathname === '/portfolio';
 
   return (
     <footer className="bg-[#071428] border-t border-[rgba(30,80,160,0.2)]">
       {/* CTA Banner */}
-      <div className="border-b border-[rgba(30,80,160,0.2)]">
-        <div className="container py-12">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Pronto para modernizar o teu negócio?
-              </h3>
-              <p className="text-[#94a3b8]">
-                Fala connosco e recebe uma proposta sem compromisso.
-              </p>
+      {!isPortfolioPage && (
+        <div className="border-b border-[rgba(30,80,160,0.2)]">
+          <div className="container py-12">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  Pronto para modernizar o teu negócio?
+                </h3>
+                <p className="text-[#94a3b8]">
+                  Fala connosco e recebe uma proposta sem compromisso.
+                </p>
+              </div>
+              <Link to="/orcamento" className="btn btn-primary btn-lg shrink-0">
+                Pedir Orçamento
+              </Link>
             </div>
-            <Link to="/orcamento" className="btn btn-primary btn-lg shrink-0">
-              Pedir Orçamento
-            </Link>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Footer Grid */}
       <div className="container py-16">
